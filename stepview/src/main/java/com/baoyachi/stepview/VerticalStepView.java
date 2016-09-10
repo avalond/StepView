@@ -5,6 +5,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +17,7 @@ import java.util.List;
 
 /**
  * 日期：16/6/24 11:48
- * <p>
+ * <p/>
  * 描述：
  */
 public class VerticalStepView extends LinearLayout implements VerticalStepViewIndicator.OnDrawIndicatorListener
@@ -27,6 +28,9 @@ public class VerticalStepView extends LinearLayout implements VerticalStepViewIn
     private int mComplectingPosition;
     private int mUnComplectedTextColor = ContextCompat.getColor(getContext(), R.color.uncompleted_text_color);//定义默认未完成文字的颜色;
     private int mComplectedTextColor = ContextCompat.getColor(getContext(), android.R.color.white);//定义默认完成文字的颜色;
+
+    private int mTextSize = 14;//default textSize
+    private TextView mTextView;
 
 
     public VerticalStepView(Context context)
@@ -51,7 +55,6 @@ public class VerticalStepView extends LinearLayout implements VerticalStepViewIn
         mStepsViewIndicator = (VerticalStepViewIndicator) rootView.findViewById(R.id.steps_indicator);
         mStepsViewIndicator.setOnDrawListener(this);
         mTextContainer = (RelativeLayout) rootView.findViewById(R.id.rl_text_container);
-        mTextContainer.removeAllViews();
     }
 
     @Override
@@ -181,6 +184,7 @@ public class VerticalStepView extends LinearLayout implements VerticalStepViewIn
 
     /**
      * set linePadding  proportion 设置线间距的比例系数
+     *
      * @param linePaddingProportion
      * @return
      */
@@ -190,29 +194,50 @@ public class VerticalStepView extends LinearLayout implements VerticalStepViewIn
         return this;
     }
 
+
+    /**
+     * set textSize
+     *
+     * @param textSize
+     * @return
+     */
+    public VerticalStepView setTextSize(int textSize)
+    {
+        if(textSize > 0)
+        {
+            mTextSize = textSize;
+        }
+        return this;
+    }
+
     @Override
     public void ondrawIndicator()
     {
-        List<Float> complectedXPosition = mStepsViewIndicator.getCircleCenterPointPositionList();
-        if(mTexts != null)
+        if(mTextContainer != null)
         {
-            for(int i = 0; i < mTexts.size(); i++)
+            mTextContainer.removeAllViews();//clear ViewGroup
+            List<Float> complectedXPosition = mStepsViewIndicator.getCircleCenterPointPositionList();
+            if(mTexts != null && complectedXPosition != null && complectedXPosition.size() > 0)
             {
-                TextView textView = new TextView(getContext());
-                textView.setText(mTexts.get(i));
-                textView.setY(complectedXPosition.get(i) - mStepsViewIndicator.getCircleRadius() / 2);
-                textView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                for(int i = 0; i < mTexts.size(); i++)
+                {
+                    mTextView = new TextView(getContext());
+                    mTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, mTextSize);
+                    mTextView.setText(mTexts.get(i));
+                    mTextView.setY(complectedXPosition.get(i) - mStepsViewIndicator.getCircleRadius() / 2);
+                    mTextView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-                if(i <= mComplectingPosition)
-                {
-                    textView.setTypeface(null, Typeface.BOLD);
-                    textView.setTextColor(mComplectedTextColor);
-                } else
-                {
-                    textView.setTextColor(mUnComplectedTextColor);
+                    if(i <= mComplectingPosition)
+                    {
+                        mTextView.setTypeface(null, Typeface.BOLD);
+                        mTextView.setTextColor(mComplectedTextColor);
+                    } else
+                    {
+                        mTextView.setTextColor(mUnComplectedTextColor);
+                    }
+
+                    mTextContainer.addView(mTextView);
                 }
-
-                mTextContainer.addView(textView);
             }
         }
     }
